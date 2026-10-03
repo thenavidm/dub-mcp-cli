@@ -14,3 +14,6 @@ desktop-extension/*.mcpb
 cookies*.json
 .sessions/
 secrets/
+
+# Also exclude dependency links used during isolated development.
+node_modules
