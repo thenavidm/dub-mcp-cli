@@ -1,0 +1,107 @@
+{
+  "manifest_version": "0.2",
+  "name": "dub",
+  "display_name": "Dub MCP Server & CLI",
+  "version": "2.0.0",
+  "description": "Dub link and partner tools with private workspace profiles and exact reviewed link workflows.",
+  "long_description": "61 shared tools: 22 reads/helpers and 39 confirmed operations. Current native link/partner API, schema help, exclusive private QR/token output and bounded reviewed batches.",
+  "author": {
+    "name": "Navid Moazzez",
+    "url": "https://navid.me"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thenavidm/dub-mcp-cli"
+  },
+  "homepage": "https://navid.me/mcp-servers/dub",
+  "documentation": "https://github.com/thenavidm/dub-mcp-cli/blob/main/INSTALL.md",
+  "support": "https://github.com/thenavidm/dub-mcp-cli/issues",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "cli",
+    "command-line-tool",
+    "dub",
+    "dub-co",
+    "short-links",
+    "link-management",
+    "affiliate-programs",
+    "partners",
+    "commissions",
+    "analytics",
+    "conversions",
+    "codex",
+    "claude-code",
+    "claude-desktop",
+    "cursor",
+    "ai-agents",
+    "typescript",
+    "desktop-extension",
+    "private-accounts",
+    "json",
+    "mutation-approval",
+    "write-safety",
+    "gemini-cli",
+    "windsurf",
+    "open-source",
+    "read-only",
+    "batch-review"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {
+        "DUB_API_KEY": "${user_config.api_key}",
+        "DUB_TOKEN_FILE": "${user_config.token_file}",
+        "DUB_READ_ONLY": "${user_config.read_only}",
+        "DUB_ALLOW_DESTRUCTIVE": "${user_config.allow_destructive}"
+      }
+    }
+  },
+  "user_config": {
+    "token_file": {
+      "type": "string",
+      "title": "Private token-only file",
+      "description": "Absolute owner-private token-only workspace key file; overrides selected key.",
+      "required": false
+    },
+    "read_only": {
+      "type": "boolean",
+      "title": "Read only",
+      "description": "Hide and directly refuse mutations and private output file writes.",
+      "default": false,
+      "required": false
+    },
+    "api_key": {
+      "type": "string",
+      "title": "Workspace API key",
+      "description": "Private scoped Dub workspace REST API key; separate from official OAuth sessions.",
+      "required": false,
+      "sensitive": true
+    },
+    "allow_destructive": {
+      "type": "boolean",
+      "title": "Allow confirmed mutations",
+      "description": "Permit mutation execution only when the tool call explicitly confirms the exact action. Disable to refuse all mutations.",
+      "default": true,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=22"
+    }
+  }
+}

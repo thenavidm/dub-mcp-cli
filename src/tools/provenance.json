@@ -1,0 +1,27 @@
+{
+  "checked": "2026-10-03",
+  "source": "https://api.dub.co",
+  "apiVersion": "0.0.1",
+  "openapi": "3.0.3",
+  "referenceDocumentSha256": "b3cdfef1bab9430f48e89697546fc82d0ce1144bb9014a8113ca440d63f2ff41",
+  "sanitizedSnapshotSha256": "8631ea7038f980f8c67df68af50399f0c35b097e95494c25a6995d93c53f78b5",
+  "publicMetadataSha256": "9c64f602f73e6345e89705351eca05e7b8dad343aa2184041e3e3e4499019eb9",
+  "nativeOperations": 57,
+  "normalizations": [
+    "Removed upstream example/example arrays.",
+    "Expanded local OpenAPI refs and nullable JSON Schema types/enums.",
+    "Converted OpenAPI boolean exclusive bounds to numeric Ajv bounds when a numeric bound exists.",
+    "For malformed exclusiveMinimum:true with no minimum, applied explicit local >0 validation to positive pagination sizes/page numbers and eventQuantity. This is documented local policy, not SDK validation evidence."
+  ],
+  "removedLegacyTools": {
+    "list_events": "Retained current GET /events.",
+    "get_workspace": "Removed: no authenticated workspace-read operation in the current 57-route OpenAPI. list_accounts is local labels only."
+  },
+  "sdkRouteDrift": {
+    "sdkVersion": "0.73.5",
+    "old": "/partners/applications",
+    "current": "/program-applications",
+    "policy": "Use current provider routes; do not call old routes or infer aliases."
+  },
+  "examples": "Removed all upstream examples before public-source scan; validation and operation descriptions retained."
+}
