@@ -1,12 +1,13 @@
 {
   "name": "@thenavidm/dub-mcp-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Dub MCP and shared task CLI with private workspace profiles, current API schemas and exact reviewed link batches.",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
     "dub-mcp": "dist/index.js",
-    "dub-cli": "dist/index.js"
+    "dub-cli": "dist/index.js",
+    "dub-mcp-cli": "dist/npx.js"
   },
   "engines": {
     "node": ">=22"
