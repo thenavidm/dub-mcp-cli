@@ -22,4 +22,4 @@ The current API was fetched from the official SDK workflow's observed source htt
 | Task CLI | Discovered help/schema and selected command results | Actual house SDK bridge, same handlers/guard |
 | Official MCP/CLI | Provider tools and OAuth workflows | Current docs, pinned CLI and controlled request fixture |
 
-Fresh matched successful Codex task/token measurements are pending. Tool counts, schema characters, another client's results and --select are not an efficiency percentage. Measure actual client/model/package versions, loading mode, comparable successful task, API quota, input/output/cache usage and latency. Claude Code benchmarking remains deferred; it is optional for current Codex work.
+README section 7 has this package's own costs, measured in Claude Code and Codex against 2.0.1 on 2026-10-05. Tool counts, schema characters, another client's results and --select are not an efficiency percentage, and no other offering was measured.

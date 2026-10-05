@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "dub",
   "display_name": "Dub MCP Server & CLI",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Dub link and partner tools with private workspace profiles and exact reviewed link workflows.",
   "long_description": "61 shared tools: 22 reads/helpers and 39 confirmed operations. Current native link/partner API, schema help, exclusive private QR/token output and bounded reviewed batches.",
   "author": {

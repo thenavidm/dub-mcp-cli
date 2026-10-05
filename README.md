@@ -11,7 +11,7 @@
 
 Dub MCP server and CLI for Codex and AI agents. 61 shared tools for current link, analytics, conversion and partner workflows, private workspace profiles and exact reviewed link batches.
 
-One package provides a task CLI, local stdio MCP and versioned desktop bundle. Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=referral&utm_campaign=dub-mcp-cli&utm_content=readme). Complete setup: [navid.me](https://navid.me/mcp-servers/dub?utm_source=github&utm_medium=referral&utm_campaign=dub-mcp-cli&utm_content=guide).
+One package provides a task CLI, local stdio MCP and versioned desktop bundle. Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=referral&utm_campaign=dub-mcp-cli&utm_content=readme). Built on [Slipway](https://github.com/thenavidm/slipway), which turns one definition of each tool into the MCP server and the CLI. Complete setup: [navid.me](https://navid.me/mcp-servers/dub?utm_source=github&utm_medium=referral&utm_campaign=dub-mcp-cli&utm_content=guide).
 
 <img src="https://cdn.navid.me/repos/dub-mcp-cli-retina.gif" alt="Illustrated Dub workflow using the shared navid.me terminal" width="520">
 
@@ -66,7 +66,7 @@ codex mcp add dub --env DUB_TOKEN_FILE=/absolute/private/dub.txt -- npx -y @then
 | 4 | [Connect your client](#4-connect-your-client) | Codex first and supported clients |
 | 5 | [Check it works](#5-check-it-works) | Local checks and deliberate read |
 | 6 | [Output, flags and exit codes](#6-output-flags-and-exit-codes) | JSON, private outputs and stable exits |
-| 7 | [MCP or CLI and token cost](#7-mcp-or-cli-and-token-cost) | Surface choice and pending usage evidence |
+| 7 | [MCP or CLI and token cost](#7-mcp-or-cli-and-token-cost) | Measured in Claude Code and Codex |
 | 8 | [Every tool and argument](#8-every-tool-and-argument) | All 61 tools and 57 native routes |
 | 9 | [Link and partner workflows](#9-link-and-partner-workflows) | Link changes, partners, financial/private output |
 | 10 | [Exact reviewed batches and pagination](#10-exact-reviewed-batches-and-pagination) | Exact approval, partial receipts and native pages |
@@ -163,7 +163,7 @@ Provider JSON returns as objects/arrays through both surfaces. The CLI emits JSO
 
 | Flag | Contract |
 | --- | --- |
-| --agent | Compact JSON, no prompt/color; --yes does not approve writes |
+| --agent | Compact JSON and no prompts; never confirms a write |
 | --select a,b.c | Local response field selection; does not reduce provider calls/quota |
 | --confirm | Only the requested mutation or output-file write |
 | --account NAME | Exact private profile |
@@ -178,7 +178,8 @@ Native body flag names retain the current schema's camelCase, such as --external
 | Exit | Meaning |
 | --- | --- |
 | 0 | Request/local operation worked; still inspect semantic result/per-link errors/accepted state |
-| 2 | Invalid input or refused write |
+| 1 | Unexpected error |
+| 2 | Invalid input or refused write, an unknown command or a hidden write |
 | 3 | Resource not found |
 | 4 | Provider authentication/permission error |
 | 5 | Other provider/network/API failure |
@@ -200,7 +201,19 @@ dub-cli create-link --payload '{"url":"https://example.com/requested","key":"req
 | Task CLI | Discovered help/schema and selected command results | Actual house SDK bridge, same handlers/guard |
 | Official MCP/CLI | Provider tools and OAuth workflows | Current docs, pinned CLI and controlled request fixture |
 
-Fresh matched successful Codex task/token measurements are pending. Tool counts, schema characters, another client's results and --select are not an efficiency percentage. Measure actual client/model/package versions, loading mode, comparable successful task, API quota, input/output/cache usage and latency. Claude Code benchmarking remains deferred; it is optional for current Codex work.
+Measured on 2026-10-05 against 2.0.1, the same day, with Claude Code 2.1.286 on Claude Opus 5.5 (one short prompt with and without the server connected, the difference read from the API's own usage figures) and Codex 0.159.3 on gpt-6.1-sol:
+
+| Cost | 2.0.1 | 3.0.0 |
+| --- | --- | --- |
+| Claude Code, every tool loaded, every message | 86,431 | 74,231 |
+| Claude Code's default, tool search, every message | 1,076 | 1,078 |
+| `SKILL.md`, read once | 4,354 | 4,417 |
+| Codex over the CLI, one task, median of five | 129,621 | 110,559 |
+| Codex over MCP, the same task, median of five | 78,146 | 78,400 |
+
+The task was "find the command that creates a short link, and the flags it requires". Every tool loaded costs less because each write's body appeared twice, as its own fields and inside `payload`, and 3.0.0 writes each repeated part once under `$defs`. Over the CLI, three 2.0.1 runs ran `schema` without a command, and every extra step carries the whole conversation forward; every 3.0.0 run asked `which` and none failed. Over MCP, Codex printed a tool list 1,545 tokens shorter on 3.0.0 (35,747 against 37,292) and cut both to about 10,000; the input totals differ by the model's own reasoning before it printed the list, from 0 to 170 tokens a run. `SKILL.md` costs 63 more because it now says how approval works over MCP and lists every exit code.
+
+Tool counts, schema characters, another client's results and --select are not an efficiency percentage, and no other offering was measured.
 
 ## 8. Every tool and argument
 
@@ -317,7 +330,7 @@ Create a link for the authenticated workspace.
 | `tagId` | No; body/guard requirements still apply | ['string', 'null'] | Deprecated: Use `tagIds` instead. The unique ID of the tag assigned to the short link. Deprecated native compatibility field. |
 | `webhookIds` | No; body/guard requirements still apply | ['array', 'null'] | Deprecated: You can now enable link.clicked webhooks for all links in a workspace or folder without passing this field manually. An array of webhook IDs to trigger when the link is clicked. These webhooks will receive click event data. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -638,7 +651,7 @@ Update a link for the authenticated workspace. If there's no change, returns it 
 | `tagId` | No; body/guard requirements still apply | ['string', 'null'] | Deprecated: Use `tagIds` instead. The unique ID of the tag assigned to the short link. Deprecated native compatibility field. |
 | `webhookIds` | No; body/guard requirements still apply | ['array', 'null'] | Deprecated: You can now enable link.clicked webhooks for all links in a workspace or folder without passing this field manually. An array of webhook IDs to trigger when the link is clicked. These webhooks will receive click event data. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -835,7 +848,7 @@ Delete a link for the authenticated workspace.
 | --- | --- | --- | --- |
 | `link_id` | Yes | string | The id of the link to delete. You may use either `linkId` (obtained via `/links/info` endpoint) or `externalId` prefixed with `ext_`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 #### bulk_create_links
 
@@ -846,7 +859,7 @@ Bulk create up to 100 links for the authenticated workspace.
 | Argument | Required | Type | Details |
 | --- | --- | --- | --- |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | array | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -955,7 +968,7 @@ Bulk update up to 100 links with the same data for the authenticated workspace.
 | `externalIds` | No; body/guard requirements still apply | array | The external IDs of the links to update as stored in your database. maxItems: `100`. default: `[]`. |
 | `data` | No; body/guard requirements still apply | object | Native field; use the reviewed provider reference. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1175,7 +1188,7 @@ Bulk delete up to 100 links for the authenticated workspace.
 | --- | --- | --- | --- |
 | `link_ids` | Yes | array | Comma-separated list of link IDs to delete. Maximum of 100 IDs. Non-existing IDs will be ignored. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 **input.link_ids**
 
@@ -1233,7 +1246,7 @@ Upsert a link for the authenticated workspace by its URL. If a link with the sam
 | `tagId` | No; body/guard requirements still apply | ['string', 'null'] | Deprecated: Use `tagIds` instead. The unique ID of the tag assigned to the short link. Deprecated native compatibility field. |
 | `webhookIds` | No; body/guard requirements still apply | ['array', 'null'] | Deprecated: You can now enable link.clicked webhooks for all links in a workspace or folder without passing this field manually. An array of webhook IDs to trigger when the link is clicked. These webhooks will receive click event data. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1488,7 +1501,7 @@ Create a tag for the authenticated workspace.
 | `color` | No; body/guard requirements still apply | string | The color of the tag. If not provided, a random color will be used from the list: red, yellow, green, blue, purple, brown, gray. enum: `["red", "yellow", "green", "blue", "purple", "brown", "gray", "pink"]`. |
 | `tag` | No; body/guard requirements still apply | string | The name of the tag to create. minLength: `1`. maxLength: `190`. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1543,7 +1556,7 @@ Update a tag in the workspace.
 | `color` | No; body/guard requirements still apply | string | The color of the tag. If not provided, a random color will be used from the list: red, yellow, green, blue, purple, brown, gray. enum: `["red", "yellow", "green", "blue", "purple", "brown", "gray", "pink"]`. |
 | `tag` | No; body/guard requirements still apply | string | The name of the tag to create. minLength: `1`. maxLength: `190`. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1565,7 +1578,7 @@ Delete a tag from the workspace. All existing links will still work, but they wi
 | --- | --- | --- | --- |
 | `id` | Yes | string | The ID of the tag to delete. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 #### create_folder
 
@@ -1579,7 +1592,7 @@ Create a folder for the authenticated workspace.
 | `description` | No; body/guard requirements still apply | ['string', 'null'] | The description of the folder. maxLength: `500`. |
 | `accessLevel` | No; body/guard requirements still apply | ['string', 'null'] | The workspace-level access level settings for the folder. Default is `write` which allows full access to the folder for all team members. The other options are `read` (view-only access) and `null` (no access) and are only available on Business plans and above. enum: `["write", "read", null]`. default: `"write"`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1617,7 +1630,7 @@ Update a folder in the workspace.
 | `description` | No; body/guard requirements still apply | ['string', 'null'] | The description of the folder. maxLength: `500`. |
 | `accessLevel` | No; body/guard requirements still apply | ['string', 'null'] | The access level of the folder within the workspace. enum: `["write", "read", null]`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1639,7 +1652,7 @@ Delete a folder from the workspace. All existing links will still work, but they
 | --- | --- | --- | --- |
 | `id` | Yes | string | The ID of the folder to delete. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 #### create_domain
 
@@ -1658,7 +1671,7 @@ Create a domain for the authenticated workspace.
 | `assetLinks` | No; body/guard requirements still apply | ['string', 'null'] | assetLinks.json configuration file (for deep link support on Android). |
 | `appleAppSiteAssociation` | No; body/guard requirements still apply | ['string', 'null'] | apple-app-site-association configuration file (for deep link support on iOS). |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1750,7 +1763,7 @@ Update a domain for the authenticated workspace.
 | `assetLinks` | No; body/guard requirements still apply | ['string', 'null'] | assetLinks.json configuration file (for deep link support on Android). |
 | `appleAppSiteAssociation` | No; body/guard requirements still apply | ['string', 'null'] | apple-app-site-association configuration file (for deep link support on iOS). |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1821,7 +1834,7 @@ Delete a domain from a workspace. It cannot be undone. This will also delete all
 | --- | --- | --- | --- |
 | `slug` | Yes | string | The domain name. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 #### register_domain
 
@@ -1833,7 +1846,7 @@ Register a domain for the authenticated workspace. Only available for Enterprise
 | --- | --- | --- | --- |
 | `domain` | No; body/guard requirements still apply | string | The domain to claim. We only support .link domains for now. minLength: `1`. pattern: `".*\\.link$"`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1886,7 +1899,7 @@ Track a lead for a short link.
 | `eventQuantity` | No; body/guard requirements still apply | ['integer', 'null'] | The numerical value associated with this lead event (e.g., number of provisioned seats in a free trial). If defined as N, the lead event will be tracked N times. maximum: `100`. exclusiveMinimum: `0`. |
 | `metadata` | No; body/guard requirements still apply | ['object', 'null'] | Additional metadata to be stored with the lead event. Max 10,000 characters. default: `null`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1925,7 +1938,7 @@ Track a sale for a short link.
 | `customerEmail` | No; body/guard requirements still apply | ['string', 'null'] | [For direct sale tracking]: The email address of the customer. maxLength: `100`. pattern: `"^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"`. default: `null`. format: `"email"`. |
 | `customerAvatar` | No; body/guard requirements still apply | ['string', 'null'] | [For direct sale tracking]: The avatar URL of the customer. default: `null`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -1957,7 +1970,7 @@ This endpoint is used to track when a user opens your app via a Dub-powered deep
 | `deepLink` | No; body/guard requirements still apply | string | The deep link that brought the user to the app. If left blank, Dub will fallback to probabilistic tracking by using the `dubDomain` parameter to check if there is an associated click event for the user's IP address. Learn more: https://d.to/ddl maxLength: `32000`. |
 | `dubDomain` | No; body/guard requirements still apply | string | Your deep link custom domain on Dub (e.g. `acme.link`). This is used in probabilistic tracking to check if there is an associated click event for the user's IP address. Learn more: https://d.to/ddl |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2022,7 +2035,7 @@ Update a customer for the authenticated workspace.
 | `country` | No; body/guard requirements still apply | string | The customer's country in ISO 3166-1 alpha-2 format. Updating this field will only affect the customer's country in Dub's system (and has no effect on existing conversion events). |
 | `subscriptionCanceledAt` | No; body/guard requirements still apply | ['string', 'null'] | The date the customer canceled their subscription. Set to a timestamp to mark the subscription as canceled, or `null` to clear it (e.g. if they resubscribe). |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2048,7 +2061,7 @@ Delete a customer from a workspace.
 | --- | --- | --- | --- |
 | `id` | Yes | string | The unique ID of the customer. You may use either the customer's `id` on Dub (obtained via `/customers` endpoint) or their `externalId` (unique ID within your system, prefixed with `ext_`, e.g. `ext_123`). |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 #### create_partner
 
@@ -2068,7 +2081,7 @@ Creates or updates a partner record (upsert behavior). If a partner with the sam
 | `description` | No; body/guard requirements still apply | ['string', 'null'] | A brief description of the partner and their background. Max 5,000 characters. maxLength: `5000`. |
 | `linkProps` | No; body/guard requirements still apply | object | Additional properties that you can pass to the partner's short link. Will be used to override the default link properties for this partner. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2251,7 +2264,7 @@ Create a link for a partner that is enrolled in your program.
 | `comments` | No; body/guard requirements still apply | ['string', 'null'] | The comments for the short link. |
 | `linkProps` | No; body/guard requirements still apply | object | Additional properties that you can pass to the partner's short link. Will be used to override the default link properties for this partner. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2423,7 +2436,7 @@ Upsert a link for a partner that is enrolled in your program. If a link with the
 | `comments` | No; body/guard requirements still apply | ['string', 'null'] | The comments for the short link. |
 | `linkProps` | No; body/guard requirements still apply | object | Additional properties that you can pass to the partner's short link. Will be used to override the default link properties for this partner. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2598,7 +2611,7 @@ Ban a partner from your program. This will disable all links and mark all commis
 | `tenantId` | No; body/guard requirements still apply | ['string', 'null'] | The ID of the partner in your system. If both `partnerId` and `tenantId` are not provided, an error will be thrown. |
 | `reason` | No; body/guard requirements still apply | string | The reason for banning the partner. enum: `["tos_violation", "inappropriate_content", "fake_traffic", "fraud", "spam", "brand_abuse"]`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2621,7 +2634,7 @@ This will deactivate the partner from your program and disable all their active 
 | `partnerId` | No; body/guard requirements still apply | ['string', 'null'] | The ID of the partner to create a link for. Will take precedence over `tenantId` if provided. |
 | `tenantId` | No; body/guard requirements still apply | ['string', 'null'] | The ID of the partner in your system. If both `partnerId` and `tenantId` are not provided, an error will be thrown. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2660,7 +2673,7 @@ Approve a pending partner application to your program. The partner will be enrol
 | `partnerId` | No; body/guard requirements still apply | string | The ID of the partner to approve. |
 | `groupId` | No; body/guard requirements still apply | ['string', 'null'] | The ID of the group to assign the partner to. If not provided, the partner will be assigned to the group they applied to, or the program's default group if no application group is set. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2686,7 +2699,7 @@ Reject a pending partner application to your program. The partner will be notifi
 | `flagForFraud` | No; body/guard requirements still apply | boolean | Whether to flag the partner for fraud review by the Dub team. Cannot be combined with `reapplicationTimeframe: instant`. |
 | `flagForFraudReason` | No; body/guard requirements still apply | string | The reason for flagging the partner for fraud. Required when flagForFraud is true. maxLength: `2000`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2728,7 +2741,7 @@ Create a discount code for a partner. The partner's group must already have a di
 | `partnerId` | No; body/guard requirements still apply | string | The ID of the partner to create a discount code for. |
 | `linkId` | No; body/guard requirements still apply | string | The ID of the partner's referral link to associate this discount code with. Each link can only have one discount code. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2750,7 +2763,7 @@ Delete a discount code for a partner by its unique ID or alphanumeric code. This
 | --- | --- | --- | --- |
 | `id_or_code` | Yes | string | The unique ID (e.g. `dcode_...`) or alphanumeric code (e.g. `ABC123`) of the discount code to delete. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 
 #### create_commission
 
@@ -2761,7 +2774,7 @@ Create one or more commissions (custom, lead or sale) for a partner. Custom comm
 | Argument | Required | Type | Details |
 | --- | --- | --- | --- |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2898,7 +2911,7 @@ Update an existing commission amount. This is useful for handling refunds (parti
 | `amount` | No; body/guard requirements still apply | number | Deprecated. Use `saleAmount` instead. minimum: `0`. Deprecated native compatibility field. |
 | `modifyAmount` | No; body/guard requirements still apply | number | Deprecated. Use `modifySaleAmount` instead. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2925,7 +2938,7 @@ Bulk update up to 100 commissions with the same status.
 | `commissionIds` | No; body/guard requirements still apply | array | Native field; use the reviewed provider reference. minItems: `1`. maxItems: `100`. |
 | `status` | No; body/guard requirements still apply | string | The status to apply to every commission in the batch. enum: `["pending", "refunded", "duplicate", "canceled", "fraud"]`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -2981,7 +2994,7 @@ Create a referrals embed token for the given partner/tenant. The endpoint first 
 | `tenantId` | No; body/guard requirements still apply | string | Native field; use the reviewed provider reference. |
 | `partner` | No; body/guard requirements still apply | object | Native field; use the reviewed provider reference. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 | `output_file` | Yes | string | Required absolute new private file. Exclusive 0600 creation; never overwrites or echoes PNG/embed credentials. minLength: `1`. |
@@ -3170,7 +3183,7 @@ Retrieve a QR code for a link.
 | `margin` | No; body/guard requirements still apply | number | The size of the margin around the QR code. Defaults to 2 if not provided. default: `2`. |
 | `include_margin` | No; body/guard requirements still apply | boolean | DEPRECATED: Margin is included by default. Use the `margin` prop to customize the margin size. default: `true`. Deprecated native compatibility field. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `output_file` | Yes | string | Required absolute new private file. Exclusive 0600 creation; never overwrites or echoes PNG/embed credentials. minLength: `1`. |
 
 #### list_bounty_submissions
@@ -3203,7 +3216,7 @@ Approve a bounty submission. Optionally specify a custom reward amount.
 | `submission_id` | Yes | string | The ID of the bounty submission |
 | `rewardAmount` | No; body/guard requirements still apply | ['number', 'null'] | The reward amount for the performance-based bounty. Applicable if the bounty reward amount is not set. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -3226,7 +3239,7 @@ Reject a bounty submission with a specified reason and optional note.
 | `rejectionReason` | No; body/guard requirements still apply | string | The reason for rejecting the submission. enum: `["invalidProof", "duplicateSubmission", "outOfTimeWindow", "didNotMeetCriteria", "other"]`. |
 | `rejectionNote` | No; body/guard requirements still apply | string | The note for rejecting the submission. maxLength: `5000`. |
 | `account` | No; body/guard requirements still apply | string | Exact configured private workspace profile label; not a tenant or provider account ID. |
-| `confirm` | No; body/guard requirements still apply | boolean | Must be true for the requested mutation or exclusive private output file. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `payload` | No; body/guard requirements still apply | object | Complete native JSON body; do not mix with body flags or payload_file. Arrays use repeated JSON object flags or a whole native array in a private file. |
 | `payload_file` | No; body/guard requirements still apply | string | Absolute regular non-symlink JSON body file, at most 1 MiB. Cannot mix with payload/body flags. minLength: `1`. |
 
@@ -3286,7 +3299,7 @@ Confirmed one-to-twenty ordered link/tag/folder tasks. Prevalidate all and verif
 | --- | --- | --- | --- |
 | `tasks` | Yes | array | One to twenty ordered link/tag/folder operations. CLI repeats --tasks with individual JSON objects; native bulk work still counts all affected records. minItems: `1`. maxItems: `20`. |
 | `account` | No; body/guard requirements still apply | string | Exact selected private workspace profile; binds label, not key ownership. |
-| `confirm` | No; body/guard requirements still apply | boolean | Explicit approval for this exact requested ordered batch. |
+| `confirm` | No; body/guard requirements still apply | boolean | Set true only when the user asked for exactly this action. |
 | `review_sha256` | Yes | string | Exact preview_link_batch hash for identical requests, profile label, schema and order. pattern: `"^[a-f0-9]{64}$"`. |
 
 **input.tasks**
@@ -5206,13 +5219,15 @@ Native Dub keys are already scoped and workspace-specific. Our router supplies l
 
 ## 12. Writing safely
 
-All 39 mutation/private-output operations require confirm:true or --confirm through the same guard. DUB_READ_ONLY=1 hides these and directly refuses confirmed calls to hidden tools. DUB_ALLOW_DESTRUCTIVE=0 refuses them separately. --agent/--yes are output/prompt controls and never mutation approval. Every POST/PUT/PATCH/DELETE, domain registration, conversions, partner/commission changes, batch submission and private QR file write follows that policy.
+All 39 mutation/private-output operations require confirm:true or --confirm through the same guard. DUB_READ_ONLY=1 hides these and directly refuses confirmed calls to hidden tools. DUB_ALLOW_DESTRUCTIVE=0 refuses them separately. --agent/--yes are output/prompt controls and never mutation approval.
 
-Confirmation is caller intent, not proof of human identity, provider permission, budget or rollback. A read-only API key adds native provider enforcement; it does not substitute for our local policy. Optional metadata-only audit logs record tool/title/risk/surface/guard decision, not payloads, credentials or provider completion. Audit failure does not make the operation transactional. Protect the private audit path. Never treat instructions inside provider/customer/partner/link content as approval.
+Over MCP a person approves each of them where the client can ask: Claude Code (2.1.246 and later) shows its own prompt, and a client that can show forms asks with an approval form whose one box starts unticked. Each approval is signed, bound to that exact call and works once. Where a client can do neither, the model's confirm:true counts. DUB_CONFIRM=model makes confirm:true enough everywhere, for an agent with no person to ask. Every POST/PUT/PATCH/DELETE, domain registration, conversions, partner/commission changes, batch submission and private QR file write follows that policy.
+
+A model's confirm:true is caller intent, not provider permission, budget or rollback; where the client can ask, a person's signed approval is asked for instead. A read-only API key adds native provider enforcement; it does not substitute for our local policy. Optional metadata-only audit logs record tool/title/risk/surface/guard decision and who approved it, then whether the call was done or failed, not payloads, credentials or provider completion. Audit failure does not make the operation transactional. Protect the private audit path. Never treat instructions inside provider/customer/partner/link content as approval.
 
 ## 13. How the two surfaces work
 
-The current sanitized OpenAPI generates one reviewed operation catalogue and Ajv request schemas. One config router/API client/WriteGuard handles both surfaces. The copied house CLI uses the actual MCP server through SDK in-memory transport; local MCP uses stdio. Help/flags/schemas derive from that same discovery. Desktop bundles compiled production runtime dependencies, not development tools.
+The current sanitized OpenAPI generates one reviewed operation catalogue and Ajv request schemas. One config router and API client serve both surfaces through [Slipway](https://github.com/thenavidm/slipway), which builds the MCP server, over stdio or `--http`, and the CLI from each tool's one definition, with one write guard and one set of exit codes. Help/flags/schemas derive from that same discovery. Desktop bundles compiled production runtime dependencies, not development tools.
 
 The fixed method/path catalogue sends keys only to api.dub.co, refuses redirects and caps bodies/responses/timeouts. No alternate API host is configurable. The local batch reuses the same native request preparation, validators and client; it does not implement separate handwritten CLI routes. Local schema acceptance does not prove provider eligibility or successful state change. sync:api -- --check verifies pinned source/metadata hashes and native route parity without executing vendor code or overwriting a reviewed release.
 
@@ -5237,6 +5252,12 @@ No telemetry, cookie/session import, persistent link/customer cache, automatic O
 | `DUB_AUDIT_LOG` | Optional private metadata-only guard log; no delivery receipt |
 | `DUB_REQUEST_TIMEOUT_MS` | 100–300000; default 30000; no automatic retries |
 | `DUB_MIN_REQUEST_INTERVAL_MS` | 0–10000; default 1100; one-process request-start spacing |
+| `DUB_CONFIRM` | `human` by default; `model` lets confirm:true alone approve over MCP, for an agent with no person to ask |
+| `DUB_SURFACE` | `full` by default; `search` lists three tools that find, describe and run the rest |
+| `DUB_TOOL_TIMEOUT_MS` | Give up on any tool after this long |
+| `DUB_HTTP_PORT`, `DUB_HTTP_HOST`, `DUB_HTTP_TOKEN` | For `--http`: port 8787 and host 127.0.0.1 by default; any other host needs the bearer token |
+| `DUB_HTTP_ALLOWED_ORIGINS` | Comma-separated browser origins allowed to call `--http`; a page from any other site is refused |
+| `DUB_DEBUG` | `1` prints debug lines on stderr |
 
 No automatic .env or official OAuth/session/config loader. GUI/remote clients have their own environment/filesystem; quota is shared with other provider clients.
 
@@ -5291,9 +5312,10 @@ The current API was fetched from the official SDK workflow's observed source htt
 
 | Component | Reviewed / locked version |
 | --- | --- |
-| Owned package | 2.0.0 |
+| Owned package | 3.0.0 |
 | Current native API operations | 57 |
-| MCP SDK | 1.32.0 |
+| Slipway | 0.1.14 |
+| MCP TypeScript SDK, through Slipway | 2.3.0 |
 | Ajv | 8.20.0 |
 | Ajv formats | 3.0.1 |
 | TypeScript | 7.0.2 |
@@ -5347,7 +5369,7 @@ The documented local stdio/CLI clients include Codex, Claude Desktop/Code, Curso
 <details>
 <summary><b>Do I need Claude Code for Codex?</b></summary>
 
-No. Codex can use local MCP or the task CLI. Claude Code is optional, and its measurements are deferred.
+No. Codex can use local MCP or the task CLI. Claude Code is optional; section 7 has both clients' measured costs.
 
 </details>
 
@@ -5438,7 +5460,7 @@ Not necessarily. create_commission may return HTTP202 accepted task metadata. No
 <details>
 <summary><b>Is the CLI proven to save tokens?</b></summary>
 
-No fresh matched successful Codex task/token comparison exists. Tool counts, characters and local field filtering are not task-token savings.
+It depends on the client and the task. In Claude Code the CLI costs nothing until it is used, plus about 4,400 tokens for `SKILL.md` once, where the server costs about 1,080 tokens a message with tool search and 74,200 with every tool loaded. In Codex, finding the command that creates a short link took a median of 110,559 input tokens over the CLI and 78,400 over MCP. Section 7 has how each was measured.
 
 </details>
 
@@ -5471,7 +5493,7 @@ If this is useful, star the repo and come say hi on [X](https://x.com/thenavidm)
 
 ## Dependencies
 
-Runtime: MCP TypeScript SDK, Ajv and ajv-formats. Development: TypeScript, Vitest, Vite and MCPB. Exact locked versions appear above. Packaging tools are excluded from desktop runtime.
+Runtime: Slipway, which brings the MCP TypeScript SDK, plus Ajv and ajv-formats. Development: TypeScript, Vitest, Vite and MCPB. Exact locked versions appear above. Packaging tools are excluded from desktop runtime.
 
 ## License
 
