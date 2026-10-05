@@ -5312,9 +5312,9 @@ The current API was fetched from the official SDK workflow's observed source htt
 
 | Component | Reviewed / locked version |
 | --- | --- |
-| Owned package | 3.0.0 |
+| Owned package | 3.0.1 |
 | Current native API operations | 57 |
-| Slipway | 0.1.14 |
+| Slipway | 0.1.17 |
 | MCP TypeScript SDK, through Slipway | 2.3.0 |
 | Ajv | 8.20.0 |
 | Ajv formats | 3.0.1 |
